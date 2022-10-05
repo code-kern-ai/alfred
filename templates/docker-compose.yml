@@ -6,13 +6,8 @@ services:
     environment:
       - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true&mode=rwc
     volumes:
-      - type: volume
-        source: kratos-sqlite
-        target: /var/lib/sqlite
-        read_only: false
-      - type: bind
-        source: ./kratos/kratos.yml
-        target: /home/.kratos.yaml
+      - {LOCAL_VOLUME_KRATOS_SQLITE}:/var/lib/sqlite
+      - {LOCAL_VOLUME_KRATOS}/kratos.yml:/home/.kratos.yaml
     command: migrate sql -e --yes
     restart: on-failure
     networks:
@@ -29,8 +24,8 @@ services:
       - SERVE_PUBLIC_BASE_URL=http://localhost:4455/.ory/kratos/public/
     command: serve -c /etc/config/kratos/kratos.yml --dev --watch-courier
     volumes:
-      - ./kratos:/etc/config/kratos:Z
-      - kratos-sqlite:/var/lib/sqlite
+      - {LOCAL_VOLUME_KRATOS}:/etc/config/kratos:Z
+      - {LOCAL_VOLUME_KRATOS_SQLITE}:/var/lib/sqlite
     networks:
       - default
 
@@ -47,7 +42,7 @@ services:
     networks:
       - default
     volumes:
-      - ./oathkeeper:/etc/config/oathkeeper:Z
+      - {LOCAL_VOLUME_OATHKEEPER}:/etc/config/oathkeeper:Z
 
   refinery-authorizer:
     image: kernai/refinery-authorizer:{AUTHORIZER}
@@ -106,7 +101,7 @@ services:
       - 80
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:Z
-      - graphql-sqlite:/sqlite
+      - {LOCAL_VOLUME_GRAPHQL_SQLITE}:/sqlite
     environment:
       - AC_EXEC_ENV_IMAGE=kernai/refinery-ac-exec-env:{AC_EXEC_ENV}
       - LF_EXEC_ENV_IMAGE=kernai/refinery-lf-exec-env:{LF_EXEC_ENV}
@@ -326,6 +321,3 @@ services:
 networks:
   default:
 
-volumes:
-  kratos-sqlite:
-  graphql-sqlite:

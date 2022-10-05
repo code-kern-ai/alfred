@@ -2,6 +2,7 @@ import docker
 import json
 import os
 import socket
+import time
 from typing import Any, Tuple
 
 from util.constants import EXEC_ENVS, SERVICE_VERSIONS, JWKS_PATH
@@ -69,10 +70,37 @@ def is_container_running(container_name: str) -> bool:
 
 def is_image_present(image_name: str, image_tag: str) -> bool:
     try:
-        image = client.images.get(image_name)
+        client.images.get(f"{image_name}:{image_tag}")
+    except docker.errors.ImageNotFound:
+        return False
+    return True
+
+
+def is_uvicorn_application_started(container_name: str) -> bool:
+    try:
+        container = client.containers.list(filters={"name": container_name})[0]
+        return "Application startup complete." in container.logs().decode("utf-8")
     except docker.errors.ImageNotFound:
         return False
 
-    if image_tag in image.tags:
-        return True
+
+def is_ui_service_ready(container_name: str) -> bool:
+    try:
+        container = client.containers.list(filters={"name": container_name})[0]
+        return "Configuration complete; ready for start up" in container.logs().decode(
+            "utf-8"
+        )
+    except docker.errors.ImageNotFound:
+        return False
+
+
+def wait_until_refinery_is_ready(timeout: int = 60) -> None:
+    start_time = time.time()
+
+    while start_time + timeout > time.time():
+        gateway_ready = is_uvicorn_application_started("refinery-gateway")
+        ui_ready = is_ui_service_ready("refinery-ui")
+        if gateway_ready and ui_ready:
+            return True
+        time.sleep(1)
     return False

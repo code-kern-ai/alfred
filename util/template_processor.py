@@ -1,4 +1,5 @@
 import json
+import os
 
 from util.constants import (
     DOCKER_COMPOSE,
@@ -9,7 +10,7 @@ from util.constants import (
 from util.docker_helper import get_credential_ip, get_host_ip
 
 
-def process_docker_compose_template():
+def process_docker_compose_template(refinery_dir: str) -> str:
     credential_ip = get_credential_ip()
     host_ip = get_host_ip()
 
@@ -24,6 +25,8 @@ def process_docker_compose_template():
 
     with open(SETTINGS, "r") as f:
         settings = json.load(f)
+        for volume, rel_path in settings.items():
+            settings[volume] = os.path.normpath(os.path.join(refinery_dir, rel_path))
 
     docker_compose = template.format(
         **versions,

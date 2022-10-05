@@ -1,3 +1,2 @@
 docker
-fastapi
-uvicorn
+docker-compose
