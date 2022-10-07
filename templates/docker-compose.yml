@@ -192,7 +192,7 @@ services:
       - {LOCAL_VOLUME_MINIO}:/data
 
   refinery-weak-supervisor:
-    image: kernai/refinery-weak-supervisor:{WEAK_SUPERVISIOR}
+    image: kernai/refinery-weak-supervisor:{WEAK_SUPERVISOR}
     restart: unless-stopped
     ports:
       - 7054:80
