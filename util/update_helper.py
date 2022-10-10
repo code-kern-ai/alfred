@@ -1,5 +1,6 @@
 import json
 import time
+from typing import List
 from util.constants import SERVICE_VERSIONS
 from util.docker_helper import is_uvicorn_application_started, exec_command_on_container
 from util.postgres_helper import get_db_versions, wait_until_postgres_is_ready
@@ -13,22 +14,29 @@ def is_any_service_version_changed() -> bool:
 
     any_service_updated = False
     for service, version in db_versions.items():
-        db_version_int = _version_number_to_int(version)
-        current_version_int = _version_number_to_int(current_versions[service])
-
-        if db_version_int < current_version_int:
+        if is_newer(version, current_versions[service].lstrip("v")):
+            print(service, flush=True)
             any_service_updated = True
-        elif db_version_int > current_version_int:
-            print(
-                f"Last version of {service} is newer than current version! Cannot update!",
-                flush=True,
-            )
-            return False
+            break
     return any_service_updated
 
 
-def _version_number_to_int(version_number: str) -> int:
-    return int(version_number.lstrip("v").replace(".", ""))
+# v1 newer than v2 (e.g. 1.1.2 > 1.1.1)
+def is_newer(v1: str, v2: str) -> bool:
+    a = [int(x) for x in v1.split(".")]
+    b = [int(x) for x in v2.split(".")]
+    if len(a) != len(b) and len(a) != 3:
+        raise Exception("invalid version format")
+    return __is_newer_int(a, b)
+
+
+def __is_newer_int(v1: List[int], v2: List[int]) -> bool:
+    for idx, _ in enumerate(v1):
+        if v2[idx] > v1[idx]:
+            return False
+        elif v2[idx] < v1[idx]:
+            return True
+    return False
 
 
 def updater_service_update_to_newest():

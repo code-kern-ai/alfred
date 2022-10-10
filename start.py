@@ -17,6 +17,10 @@ from util.update_helper import (
 
 refinery_dir = sys.argv[1]
 
+if wait_until_refinery_is_ready(timeout=1):
+    print("Refinery is already running!", flush=True)
+    sys.exit(0)
+
 print("Creating docker-compose.yml file...", flush=True)
 minio_endpoint = process_docker_compose_template(refinery_dir)
 print("Creating jwks.json secret...", flush=True)
@@ -34,7 +38,8 @@ if wait_until_postgres_is_ready():
 
 run_updates = is_any_service_version_changed()
 if run_updates:
-    if not create_database_dump():
+    success_db_dump = create_database_dump()
+    if not success_db_dump:
         print("Database dump failed!", flush=True)
         print("Please contact the developers!", flush=True)
         sys.exit(0)
