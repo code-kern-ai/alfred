@@ -6,8 +6,13 @@ from util.docker_helper import (
     create_jwks_secret_if_not_existing,
     check_and_pull_exec_env_images,
     wait_until_refinery_is_ready,
+    wait_until_postgres_migration_is_exited,
 )
-from util.postgres_helper import create_database_dump, wait_until_postgres_is_ready
+from util.postgres_helper import (
+    create_database_dump,
+    update_db_versions,
+    wait_until_postgres_is_ready,
+)
 from util.template_processor import process_docker_compose_template
 from util.update_helper import (
     is_any_service_version_changed,
@@ -47,6 +52,8 @@ if run_updates:
 print("Starting all containers...", flush=True)
 subprocess.call(["docker-compose", "-f", DOCKER_COMPOSE, "up", "-d"])
 
+wait_until_postgres_migration_is_exited()
+
 wait_until_db_and_updater_service_are_ready()
 if run_updates:
     print("Service versions have changed.", flush=True)
@@ -63,6 +70,9 @@ if wait_until_refinery_is_ready():
     print("Refinery is ready!", flush=True)
 else:
     print("Refinery is not ready!", flush=True)
+
+# write current versions to db
+update_db_versions()
 
 print("UI:           http://localhost:4455/app/")
 print(f"Minio:        {minio_endpoint}")

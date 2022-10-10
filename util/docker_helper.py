@@ -5,7 +5,12 @@ import socket
 import time
 from typing import Any, Tuple
 
-from util.constants import EXEC_ENVS, SERVICE_VERSIONS, JWKS_PATH
+from util.constants import (
+    EXEC_ENVS,
+    SERVICE_VERSIONS,
+    JWKS_PATH,
+    POSTGRES_MIGRATE_CONTAINER,
+)
 
 client = docker.from_env()
 
@@ -80,7 +85,7 @@ def is_uvicorn_application_started(container_name: str) -> bool:
     try:
         container = client.containers.list(filters={"name": container_name})[0]
         return "Application startup complete." in container.logs().decode("utf-8")
-    except docker.errors.ImageNotFound:
+    except IndexError:
         return False
 
 
@@ -90,11 +95,27 @@ def is_ui_service_ready(container_name: str) -> bool:
         return "Configuration complete; ready for start up" in container.logs().decode(
             "utf-8"
         )
-    except docker.errors.ImageNotFound:
+    except IndexError:
         return False
 
 
-def wait_until_refinery_is_ready(timeout: int = 60) -> None:
+def wait_until_postgres_migration_is_exited(timeout: int = 600) -> bool:
+    start_time = time.time()
+
+    while start_time + timeout > time.time():
+        try:
+            container = client.containers.list(
+                filters={"name": POSTGRES_MIGRATE_CONTAINER}
+            )[0]
+            if container.status == "exited":
+                return True
+        except Exception:
+            return False
+        time.sleep(1)
+    return False
+
+
+def wait_until_refinery_is_ready(timeout: int = 60) -> bool:
     start_time = time.time()
 
     while start_time + timeout > time.time():

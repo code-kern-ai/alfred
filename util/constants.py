@@ -10,5 +10,6 @@ EXEC_ENVS = {
 }
 JWKS_PATH = "/refinery/oathkeeper/jwks.json"
 PG_CONTAINER = "graphql-postgres"
+POSTGRES_MIGRATE_CONTAINER = "postgres-migrate"
 SERVICE_VERSIONS = "/refinery/versions.json"
 SETTINGS = "/refinery/settings.json"

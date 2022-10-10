@@ -14,8 +14,7 @@ def is_any_service_version_changed() -> bool:
 
     any_service_updated = False
     for service, version in db_versions.items():
-        if is_newer(version, current_versions[service].lstrip("v")):
-            print(service, flush=True)
+        if is_newer(current_versions[service].lstrip("v"), version):
             any_service_updated = True
             break
     return any_service_updated
@@ -40,6 +39,11 @@ def __is_newer_int(v1: List[int], v2: List[int]) -> bool:
 
 
 def updater_service_update_to_newest():
+    # the updater service is part of the docker-compose stack and therefore located
+    # in a differrent network than alfred. Therefore, the updater service can not
+    # be reached via the alfred network. Therefore, we need to use the docker
+    # exec command to update the updater service.
+    # The following command executes the update_to_current command on the updater service.
     exit_code, output = exec_command_on_container(
         "refinery-updater", "python -c 'import app; app.update_to_newest()'"
     )
