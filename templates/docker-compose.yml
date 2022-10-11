@@ -6,7 +6,10 @@ services:
     environment:
       - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true&mode=rwc
     volumes:
-      - {LOCAL_VOLUME_KRATOS_SQLITE}:/var/lib/sqlite
+      - type: volume
+        source: kratos-sqlite
+        target: /var/lib/sqlite
+        read_only: false
       - {LOCAL_VOLUME_KRATOS}/kratos.yml:/home/.kratos.yaml
     command: migrate sql -e --yes
     restart: on-failure
@@ -25,7 +28,7 @@ services:
     command: serve -c /etc/config/kratos/kratos.yml --dev --watch-courier
     volumes:
       - {LOCAL_VOLUME_KRATOS}:/etc/config/kratos:Z
-      - {LOCAL_VOLUME_KRATOS_SQLITE}:/var/lib/sqlite
+      - kratos-sqlite:/var/lib/sqlite
     networks:
       - default
 
@@ -101,7 +104,7 @@ services:
       - 80
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:Z
-      - {LOCAL_VOLUME_GRAPHQL_SQLITE}:/sqlite
+      - graphql-sqlite:/sqlite
     environment:
       - AC_EXEC_ENV_IMAGE=kernai/refinery-ac-exec-env:{AC_EXEC_ENV}
       - LF_EXEC_ENV_IMAGE=kernai/refinery-lf-exec-env:{LF_EXEC_ENV}
@@ -321,3 +324,6 @@ services:
 networks:
   default:
 
+volumes:
+  kratos-sqlite:
+  graphql-sqlite:
