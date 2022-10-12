@@ -1,5 +1,5 @@
 import json
-import os
+import sys
 
 from util.constants import (
     DOCKER_COMPOSE,
@@ -10,7 +10,7 @@ from util.constants import (
 from util.docker_helper import get_credential_ip, get_host_ip
 
 
-def process_docker_compose_template(refinery_dir: str) -> str:
+def process_docker_compose_template(refinery_dir: str, is_windows: bool) -> str:
     credential_ip = get_credential_ip()
     host_ip = get_host_ip()
 
@@ -25,8 +25,18 @@ def process_docker_compose_template(refinery_dir: str) -> str:
 
     with open(SETTINGS, "r") as f:
         settings = json.load(f)
-        for volume, rel_path in settings.items():
-            settings[volume] = os.path.normpath(os.path.join(refinery_dir, rel_path))
+        path_sep = "\\" if is_windows else "/"
+        for volume, path in settings.items():
+            if path.startswith(".."):
+                print("Path in settings.json must not start with '..'!", flush=True)
+                sys.exit(1)
+            if refinery_dir[0] == ".":  # relative path
+                path = path[1:]
+                if path[0] != path_sep:
+                    path = path_sep + path[1:]
+                settings[volume] = refinery_dir + path
+            else:
+                settings[volume] = path
 
     docker_compose = template.format(
         **versions,

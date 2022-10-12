@@ -21,13 +21,14 @@ from util.update_helper import (
 )
 
 refinery_dir = sys.argv[1]
+is_windows = sys.argv[2].lower() == "windows"
 
 if wait_until_refinery_is_ready(timeout=1):
     print("Refinery is already running!", flush=True)
     sys.exit(0)
 
 print("Creating docker-compose.yml file...", flush=True)
-minio_endpoint = process_docker_compose_template(refinery_dir)
+minio_endpoint = process_docker_compose_template(refinery_dir, is_windows)
 print("Creating jwks.json secret...", flush=True)
 create_jwks_secret_if_not_existing()
 print("Checking and pulling exec env images...", flush=True)
