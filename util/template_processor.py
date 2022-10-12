@@ -7,18 +7,13 @@ from util.constants import (
     SERVICE_VERSIONS,
     SETTINGS,
 )
-from util.docker_helper import get_credential_ip, get_host_ip
+from util.docker_helper import get_credential_ip
 
 
-def process_docker_compose_template(
-    refinery_dir: str, minio_endpoint: str = None
-) -> str:
+def process_docker_compose_template(refinery_dir: str, minio_endpoint: str) -> None:
+
     credential_ip = get_credential_ip()
     cred_endpoint = f"http://{credential_ip}:7053"
-
-    if minio_endpoint is None:
-        host_ip = get_host_ip()
-        minio_endpoint = f"http://{host_ip}:7053"
 
     with open(DOCKER_COMPOSE_TEMPLATE, "r") as f:
         template = f.read()
@@ -42,5 +37,3 @@ def process_docker_compose_template(
 
     with open(DOCKER_COMPOSE, "w") as f:
         f.write(docker_compose)
-
-    return minio_endpoint

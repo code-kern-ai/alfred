@@ -21,18 +21,14 @@ from util.update_helper import (
 )
 
 refinery_dir = sys.argv[1]
-
-if len(sys.argv) > 2:
-    minio_endpoint = sys.argv[2]
-else:
-    minio_endpoint = None
+minio_endpoint = sys.argv[2]
 
 if wait_until_refinery_is_ready(timeout=1):
     print("Refinery is already running!", flush=True)
     sys.exit(0)
 
 print("Creating docker-compose.yml file...", flush=True)
-minio_endpoint = process_docker_compose_template(refinery_dir, minio_endpoint)
+process_docker_compose_template(refinery_dir, minio_endpoint)
 print("Creating jwks.json secret if not existing...", flush=True)
 create_jwks_secret_if_not_existing()
 print("Checking and pulling exec env images...", flush=True)

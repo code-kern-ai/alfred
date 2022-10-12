@@ -1,7 +1,6 @@
 import docker
 import json
 import os
-import socket
 import time
 from typing import Any, Tuple
 
@@ -29,7 +28,13 @@ def check_and_pull_exec_env_images() -> None:
 def create_jwks_secret_if_not_existing() -> None:
 
     if os.path.isfile(JWKS_PATH):
-        return
+        with open(JWKS_PATH, "r") as f:
+            line = f.readline().strip()
+            if len(line) != 0:
+                return
+
+    if not is_image_present("docker.io/oryd/oathkeeper", "v0.38"):
+        client.images.pull("docker.io/oryd/oathkeeper", "v0.38")
 
     jwks = client.containers.run(
         "docker.io/oryd/oathkeeper:v0.38",
@@ -48,21 +53,6 @@ def exec_command_on_container(container_name: str, command: str) -> Tuple[int, A
 def get_credential_ip() -> str:
     network = client.networks.get("bridge")
     return network.attrs["IPAM"]["Config"][0]["Gateway"]
-
-
-def get_host_ip() -> str:
-    # https://stackoverflow.com/questions/166506/finding-local-ip-addresses-using-pythons-stdlib
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.settimeout(0)
-    try:
-        # doesn't even have to be reachable
-        s.connect(("10.254.254.254", 1))
-        ip = s.getsockname()[0]
-    except Exception:
-        ip = "127.0.0.1"
-    finally:
-        s.close()
-    return ip
 
 
 def is_container_running(container_name: str) -> bool:
