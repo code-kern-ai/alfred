@@ -30,7 +30,7 @@ def process_docker_compose_template(refinery_dir: str, is_windows: bool) -> str:
             if path.startswith(".."):
                 print("Path in settings.json must not start with '..'!", flush=True)
                 sys.exit(1)
-            if refinery_dir[0] == ".":  # relative path
+            if path[0] == ".":  # relative path
                 path = path[1:]
                 if path[0] != path_sep:
                     path = path_sep + path[1:]
