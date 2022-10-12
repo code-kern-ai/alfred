@@ -1,5 +1,5 @@
 import json
-import sys
+import os
 
 from util.constants import (
     DOCKER_COMPOSE,
@@ -10,12 +10,15 @@ from util.constants import (
 from util.docker_helper import get_credential_ip, get_host_ip
 
 
-def process_docker_compose_template(refinery_dir: str, is_windows: bool) -> str:
+def process_docker_compose_template(
+    refinery_dir: str, minio_endpoint: str = None
+) -> str:
     credential_ip = get_credential_ip()
-    host_ip = get_host_ip()
-
     cred_endpoint = f"http://{credential_ip}:7053"
-    minio_endpoint = f"http://{host_ip}:7053"
+
+    if minio_endpoint is None:
+        host_ip = get_host_ip()
+        minio_endpoint = f"http://{host_ip}:7053"
 
     with open(DOCKER_COMPOSE_TEMPLATE, "r") as f:
         template = f.read()
@@ -25,18 +28,8 @@ def process_docker_compose_template(refinery_dir: str, is_windows: bool) -> str:
 
     with open(SETTINGS, "r") as f:
         settings = json.load(f)
-        path_sep = "\\" if is_windows else "/"
-        for volume, path in settings.items():
-            if path.startswith(".."):
-                print("Path in settings.json must not start with '..'!", flush=True)
-                sys.exit(1)
-            if path[0] == ".":  # relative path
-                path = path[1:]
-                if path[0] != path_sep:
-                    path = path_sep + path[1:]
-                settings[volume] = refinery_dir + path
-            else:
-                settings[volume] = path
+        for volume, rel_path in settings.items():
+            settings[volume] = os.path.normpath(os.path.join(refinery_dir, rel_path))
 
     docker_compose = template.format(
         **versions,
