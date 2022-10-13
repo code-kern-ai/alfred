@@ -17,6 +17,10 @@ def is_any_service_version_changed() -> bool:
         if is_newer(current_versions[service].lstrip("v"), version):
             any_service_updated = True
             break
+    if not any_service_updated and len(db_versions.keys()) != len(
+        current_versions.keys()
+    ):
+        any_service_updated = True
     return any_service_updated
 
 
