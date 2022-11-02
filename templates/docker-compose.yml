@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   kratos-migrate:
-    image: oryd/kratos:v0.8.0-alpha.2-sqlite
+    image: oryd/kratos:{KRATOS}
     environment:
       - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true&mode=rwc
     volumes:
@@ -19,7 +19,7 @@ services:
   kratos:
     depends_on:
       - kratos-migrate
-    image: oryd/kratos:v0.8.0-alpha.2-sqlite
+    image: oryd/kratos:{KRATOS}
     restart: unless-stopped
     environment:
       - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true
@@ -33,7 +33,7 @@ services:
       - default
 
   oathkeeper:
-    image: oryd/oathkeeper:v0.38.15-beta.1
+    image: oryd/oathkeeper:{OATHKEEPER}
     depends_on:
       - kratos
     ports:
@@ -56,7 +56,7 @@ services:
       - default
 
   mailhog:
-    image: mailhog/mailhog:latest
+    image: mailhog/mailhog:{MAILHOG}
     ports:
       - 1025:1025
       - 4436:8025
@@ -132,7 +132,7 @@ services:
       - default
 
   graphql-postgres:
-    image: docker.io/postgres:13
+    image: docker.io/postgres:{POSTGRES}
     restart: always
     ports:
       - 7052:5432
@@ -147,7 +147,7 @@ services:
       - {LOCAL_VOLUME_POSTGRES}:/var/lib/postgresql/data
       
   qdrant:
-    image: qdrant/qdrant:v0.9.1
+    image: qdrant/qdrant:{QDRANT}
     restart: always
     ports:
       - 6333:6333
@@ -176,7 +176,7 @@ services:
       - default
 
   object-storage:
-    image: docker.io/minio/minio:latest
+    image: docker.io/minio/minio:{MINIO}
     restart: always
     ports:
       - 7053:9000

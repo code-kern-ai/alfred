@@ -9,6 +9,7 @@ from util.constants import (
     SERVICE_VERSIONS,
     JWKS_PATH,
     POSTGRES_MIGRATE_CONTAINER,
+    REFINERY,
 )
 
 client = docker.from_env()
@@ -16,7 +17,7 @@ client = docker.from_env()
 
 def check_and_pull_exec_env_images() -> None:
     with open(SERVICE_VERSIONS, "r") as f:
-        versions = json.load(f)
+        versions = json.load(f)[REFINERY]
 
     for exec_env, image_name in EXEC_ENVS.items():
         image_tag = versions[exec_env]

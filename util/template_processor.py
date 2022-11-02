@@ -6,6 +6,8 @@ from util.constants import (
     DOCKER_COMPOSE_TEMPLATE,
     SERVICE_VERSIONS,
     SETTINGS,
+    REFINERY,
+    THIRD_PARTY,
 )
 from util.docker_helper import get_credential_ip
 
@@ -27,7 +29,8 @@ def process_docker_compose_template(refinery_dir: str, minio_endpoint: str) -> N
             settings[volume] = os.path.normpath(os.path.join(refinery_dir, rel_path))
 
     docker_compose = template.format(
-        **versions,
+        **versions[REFINERY],
+        **versions[THIRD_PARTY],
         **settings,
         **{
             "CRED_ENDPOINT": cred_endpoint,

@@ -1,14 +1,14 @@
 import json
 import time
 from typing import List
-from util.constants import SERVICE_VERSIONS
+from util.constants import SERVICE_VERSIONS, REFINERY
 from util.docker_helper import is_uvicorn_application_started, exec_command_on_container
 from util.postgres_helper import get_db_versions, wait_until_postgres_is_ready
 
 
 def is_any_service_version_changed() -> bool:
     with open(SERVICE_VERSIONS, "r") as f:
-        current_versions = json.load(f)
+        current_versions = json.load(f)[REFINERY]
 
     db_versions = get_db_versions()
 
