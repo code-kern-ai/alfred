@@ -4,7 +4,13 @@ import time
 from datetime import datetime
 from typing import Dict
 from zipfile import ZipFile
-from util.constants import BACKUP_DIR, CONNECTION_STRING, PG_CONTAINER, SERVICE_VERSIONS
+from util.constants import (
+    BACKUP_DIR,
+    CONNECTION_STRING,
+    PG_CONTAINER,
+    SERVICE_VERSIONS,
+    REFINERY,
+)
 from util.docker_helper import exec_command_on_container
 
 
@@ -61,7 +67,7 @@ def get_db_versions() -> Dict[str, str]:
 def update_db_versions() -> bool:
 
     with open(SERVICE_VERSIONS, "r") as f:
-        current_versions = json.load(f)
+        current_versions = json.load(f)[REFINERY]
     db_versions = get_db_versions()
 
     # update existing service versions
