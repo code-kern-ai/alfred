@@ -75,6 +75,6 @@ else:
 # write current versions to db
 update_db_versions()
 
-print("UI:           http://localhost:4455/app/")
+print("UI:           http://localhost:4455/refinery/")
 print(f"Minio:        {minio_endpoint}")
 print("MailHog:      http://localhost:4436/")
