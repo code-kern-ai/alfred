@@ -83,9 +83,7 @@ def is_uvicorn_application_started(container_name: str) -> bool:
 def is_ui_service_ready(container_name: str) -> bool:
     try:
         container = client.containers.list(filters={"name": container_name})[0]
-        return "Configuration complete; ready for start up" in container.logs().decode(
-            "utf-8"
-        )
+        return "Ready in" in container.logs().decode("utf-8")
     except IndexError:
         return False
 
